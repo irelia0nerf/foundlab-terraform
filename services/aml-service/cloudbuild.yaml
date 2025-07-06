@@ -1,0 +1,22 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/aml-service:$COMMIT_SHA'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/aml-service:$COMMIT_SHA']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'aml-service' # <-- MUDA O NOME AQUI
+      - '--image'
+      - 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/aml-service:$COMMIT_SHA'
+      - '--region'
+      - 'southamerica-east1'
+      - '--service-account'
+      - 'cloud-run-sa@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--no-allow-unauthenticated'
