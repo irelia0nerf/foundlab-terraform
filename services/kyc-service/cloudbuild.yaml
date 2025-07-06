@@ -1,0 +1,42 @@
+steps:
+  # 1. Instalar dependências de teste
+  - name: 'python:3.11'
+    entrypoint: 'pip'
+    args: ['install', '-r', 'requirements.txt']
+
+  # 2. Executar testes unitários
+  - name: 'python:3.11'
+    entrypoint: 'pytest'
+    args: ['tests/']
+
+  # 3. Construir a imagem Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/kyc-service:$COMMIT_SHA'
+      - '.'
+
+  # 4. Enviar a imagem para o Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/kyc-service:$COMMIT_SHA']
+
+  # 5. Implantar no Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'kyc-service'
+      - '--image'
+      - 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/kyc-service:$COMMIT_SHA'
+      - '--region'
+      - 'southamerica-east1'
+      - '--service-account'
+      - 'cloud-run-sa@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--set-env-vars'
+      - 'GCP_PROJECT_ID=$PROJECT_ID,PUBSUB_TOPIC_ID=foundlab-events'
+      - '--no-allow-unauthenticated' # Protegido pelo API Gateway
+
+images:
+  - 'southamerica-east1-docker.pkg.dev/$PROJECT_ID/foundlab-repo/kyc-service:$COMMIT_SHA'

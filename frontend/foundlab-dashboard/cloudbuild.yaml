@@ -1,0 +1,17 @@
+steps:
+  # Etapa 1: Instalar dependências do Node.js
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['install']
+    id: 'npm-install'
+
+  # Etapa 2: Construir a aplicação React para produção
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'build']
+    id: 'npm-build'
+    waitFor: ['npm-install']
+
+  # Etapa 3: Implantar no Firebase Hosting
+  - name: 'gcr.io/firebase/firebase'
+    args: ['deploy', '--only', 'hosting', '--project', '$PROJECT_ID', '--non-interactive']
+    id: 'firebase-deploy'
+    waitFor: ['npm-build']

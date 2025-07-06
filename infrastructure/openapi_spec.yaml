@@ -1,0 +1,79 @@
+# --- openapi_spec.yaml ---
+openapi: 3.0.0
+info:
+  title: FoundLab Unified API
+  version: "1.0.0"
+  description: "Ponto de entrada único e seguro para a plataforma FoundLab."
+
+# Define a segurança via API Key. Todas as chamadas devem incluir o header X-API-Key.
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /v1/kyc/verify:
+    post:
+      summary: "Inicia uma verificação de identidade (KYC)."
+      operationId: "verifyKyc"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document_id: { type: string, example: '12345678900' }
+                full_name: { type: string, example: 'João da Silva' }
+      responses:
+        '200':
+          description: 'Verificação processada com sucesso.'
+      x-google-backend:
+        # IMPORTANTE: A URL real será determinada após a primeira implantação do serviço.
+        # Use um placeholder ou a URL obtida do Cloud Run.
+        address: "https://kyc-service-xxxxxxxx-sa.a.run.app"
+        protocol: "h2"
+
+  /v1/aml/screen:
+    post:
+      summary: "Realiza o screening de uma transação (AML)."
+      operationId: "screenAml"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id: { type: string, example: 'txn_123abc' }
+                amount_brl: { type: number, example: 5000.50 }
+      responses:
+        '200':
+          description: 'Screening processado com sucesso.'
+      x-google-backend:
+        address: "https://aml-service-xxxxxxxx-sa.a.run.app"
+        protocol: "h2"
+
+  /v1/scores/calculate-psrr:
+    post:
+      summary: "Calcula o score de propensão de risco (PSRR)."
+      operationId: "calculatePsrr"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id: { type: string, example: 'client-uuid-12345' }
+      responses:
+        '200':
+          description: 'Cálculo de score processado com sucesso.'
+      x-google-backend:
+        address: "https://scorelab-service-xxxxxxxx-sa.a.run.app"
+        protocol: "h2"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

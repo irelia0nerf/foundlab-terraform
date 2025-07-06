@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+sqlalchemy
+psycopg2-binary
+google-cloud-secret-manager
+google-cloud-pubsub
+
+# Testing dependencies
+pytest
+httpx
